@@ -43,8 +43,9 @@ document.getElementById('start-btn').addEventListener('click', () => {
 });
 
 document.getElementById('retry-btn').addEventListener('click', () => {
-    // Hide end screen
+    // Hide end screen and ensure HUD is visible
     document.getElementById('end-screen').classList.add('hidden');
+    document.getElementById('hud').classList.remove('hidden');
     game.reset();
     game.start();
 });
