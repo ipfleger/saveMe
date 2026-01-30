@@ -59,6 +59,13 @@ export default class Princess {
 
     // Called when Wave 10 is cleared
     triggerWinSequence() {
+        this.audio.playMusic('jingle');
+
         this.state = 'WIN_RUN';
+            setTimeout(() => {
+        if (this.state === 'WIN_RUN') { // Ensure we are still in win state
+            this.audio.playMusic('win');
+        }
+    }, 2000);
     }
 }
