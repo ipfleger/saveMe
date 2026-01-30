@@ -113,11 +113,31 @@ export default class Game {
         this.particles = this.particles.filter(p => p.life > 0);
 
         // 6. Game Over Check
-        if (this.princess.health <= 0 || this.hero.health <= 0) {
-            this.state = 'GAMEOVER';
-            document.getElementById('end-screen').classList.remove('hidden');
-            document.getElementById('final-score').innerText = this.score;
-        }
+// Inside Game.update()
+
+if (this.princess.health <= 0 || this.hero.health <= 0) {
+    if (this.state !== 'GAMEOVER') {
+        this.state = 'GAMEOVER';
+        
+        // Play Loss Sound
+        // this.audio.playSFX('lose'); // (Optional if you add a lose sound)
+        
+        // Save Score
+        this.storage.saveScore(this.score);
+        
+        // Update UI
+        const endScreen = document.getElementById('end-screen');
+        endScreen.classList.remove('hidden');
+        
+        // Show current score
+        document.getElementById('final-score').innerText = this.score;
+        
+        // Update title based on if they won or lost
+        const title = document.getElementById('end-title');
+        title.innerText = (this.princess.health > 0 && this.hero.health > 0) ? "YOU WIN" : "GAME OVER";
+        title.style.color = (this.princess.health > 0) ? "#FF007F" : "white";
+    }
+}
     }
 
     handleSpawning(dt) {
