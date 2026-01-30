@@ -120,7 +120,7 @@ if (this.princess.health <= 0 || this.hero.health <= 0) {
         this.state = 'GAMEOVER';
         
         // Play Loss Sound
-        // this.audio.playSFX('lose'); // (Optional if you add a lose sound)
+        this.audio.playSFX('lose'); // (Optional if you add a lose sound)
         
         // Save Score
         this.storage.saveScore(this.score);
