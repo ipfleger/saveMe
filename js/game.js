@@ -107,8 +107,8 @@ export default class Game {
         // 4. COMBAT & COLLISIONS (The Core System)
         this.checkCollisions();
         
-        // 5. Cleanup Dead Objects
-        this.enemies = this.enemies.filter(e => !e.isDead);
+        // 5. Cleanup  Objects
+        this.enemies = this.enemies.filter(e => !e.is);
         this.projectiles = this.projectiles.filter(p => !p.toRemove);
         this.particles = this.particles.filter(p => p.life > 0);
 
@@ -183,6 +183,7 @@ export default class Game {
             
             // 2. BOW LOGIC (Spawn Projectile)
             else if (this.hero.weapon === 'bow') {
+                this.audio.playSFX('shoot');
                 this.projectiles.push(new Projectile(this.hero.x, this.hero.y, this.hero.angle, 'arrow'));
                 
                 if (this.hero.powerups.spreadShot) {
@@ -216,8 +217,9 @@ export default class Game {
     }
 
     damageEnemy(enemy, amount) {
-        const dead = enemy.takeDamage(amount);
+        const  = enemy.takeDamage(amount);
         if (dead) {
+            this.audio.playSFX('hit'); 
             this.score += enemy.scoreValue;
             document.getElementById('scoreVal').innerText = this.score;
             
