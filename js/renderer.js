@@ -1,3 +1,6 @@
+// renderer.js
+import { WORLD_SIZE } from './constants.js';
+
 export class Renderer {
     constructor(ctx) {
         this.ctx = ctx;
@@ -7,7 +10,7 @@ export class Renderer {
         // "The Juice" variables
         this.shake = 0;
 
-        // Texture Cache
+        // Texture Cache (From Code B - High Performance)
         this.textures = {
             dots: this.createDotPattern(),
             stripes: this.createStripePattern(),
@@ -20,7 +23,7 @@ export class Renderer {
         this.height = h;
     }
 
-    // --- Procedural Texture Generators (Run once at startup) ---
+    // --- Procedural Texture Generators ---
     createDotPattern() {
         const c = document.createElement('canvas');
         c.width = 20; c.height = 20;
@@ -50,37 +53,72 @@ export class Renderer {
         return this.ctx.createPattern(c, 'repeat');
     }
 
-    // --- Main Draw Methods ---
-
-    clear() {
-        this.ctx.save();
-        
-        // Apply Screen Shake
-        if (this.shake > 0) {
-            const dx = (Math.random() - 0.5) * this.shake;
-            const dy = (Math.random() - 0.5) * this.shake;
-            this.ctx.translate(dx, dy);
-            this.shake *= 0.9; // Decay shake
-            if (this.shake < 0.5) this.shake = 0;
-        }
-
-        // Draw Background
-        this.ctx.fillStyle = '#2c3e50'; // Dark Blue Base
-        this.ctx.fillRect(-10, -10, this.width + 20, this.height + 20); // Oversize for shake
-        
-        // Draw Grid Texture
-        this.ctx.fillStyle = this.textures.grid;
-        this.ctx.fillRect(0, 0, this.width, this.height);
-
-        this.ctx.restore();
-    }
-
-    // Triggered by explosions/damage
     addShake(amount) {
         this.shake = amount;
     }
 
-    drawHero(hero, input) {
+    // --- MAIN RENDER LOOP ---
+    drawWorld(game) {
+        this.ctx.save();
+
+        // 1. CLEAR SCREEN (Fill with base color first)
+        this.ctx.fillStyle = '#2c3e50'; // Dark Blue Base
+        this.ctx.fillRect(0, 0, this.width, this.height);
+
+        // 2. CALCULATE CAMERA (From Code A - Centers Hero)
+        // We clamp the camera so you can't see past the edge of the world? 
+        // Or leave it free? Let's leave it free for now like Code A.
+        const camX = game.hero.x - this.width / 2;
+        const camY = game.hero.y - this.height / 2;
+
+        // 3. APPLY SHAKE & CAMERA TRANSFORM
+        let shakeX = 0, shakeY = 0;
+        if (this.shake > 0) {
+            shakeX = (Math.random() - 0.5) * this.shake;
+            shakeY = (Math.random() - 0.5) * this.shake;
+            this.shake *= 0.9; // Decay
+            if (this.shake < 0.5) this.shake = 0;
+        }
+
+        // Move the "Context" to the correct place in the world
+        this.ctx.translate(-camX + shakeX, -camY + shakeY);
+
+        // 4. DRAW BACKGROUND PATTERN
+        // We draw the grid pattern covering ONLY the visible screen area to save performance
+        // Because we translated the context, drawing at (camX, camY) puts it exactly on screen.
+        this.ctx.fillStyle = this.textures.grid;
+        // Extend slightly to cover shake edges
+        this.ctx.fillRect(camX - 20, camY - 20, this.width + 40, this.height + 40);
+
+        // 5. DRAW WORLD BOUNDARY (Code A Feature)
+        this.ctx.strokeStyle = '#444';
+        this.ctx.lineWidth = 10;
+        this.ctx.strokeRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+
+        // 6. DRAW ENTITIES (Using Code B's polished styles)
+        // Note: We assume 'game' holds arrays of these entities
+        if (game.temples) game.temples.forEach(t => t.draw(this.ctx)); // Assuming Temple has its own draw
+        if (game.particles) game.particles.forEach(p => p.draw(this.ctx)); 
+        if (game.projectiles) game.projectiles.forEach(p => p.draw(this.ctx));
+
+        if (game.princess) this.drawPrincess(game.princess);
+        if (game.enemies) game.enemies.forEach(e => this.drawEnemy(e));
+        
+        // Draw Hero last so they are on top
+        this.drawHero(game.hero);
+
+        // 7. RESTORE CONTEXT (Switch back to Screen Coordinates for UI)
+        this.ctx.restore();
+
+        // 8. DRAW UI (Joysticks, Score, etc.)
+        if (game.input && game.input.joysticks) {
+            this.drawJoysticks(game.input);
+        }
+    }
+
+    // --- ENTITY RENDERERS (Polished Visuals from Code B) ---
+
+    drawHero(hero) {
         this.ctx.save();
         this.ctx.translate(hero.x, hero.y);
         
@@ -94,7 +132,7 @@ export class Renderer {
         this.ctx.fillStyle = this.textures.dots;
         this.ctx.fillRect(-15, -15, 30, 30);
 
-        // Blushing Effect (End Game)
+        // Blushing Effect
         if (hero.isBlushing) {
             this.ctx.fillStyle = '#FF69B4'; // Hot Pink
             this.ctx.beginPath();
@@ -103,10 +141,20 @@ export class Renderer {
             this.ctx.fill();
         }
 
-        // Rotating Shield/Sword
+        // Sword/Weapon Visual
         this.ctx.rotate(hero.angle);
-        this.ctx.fillStyle = '#FFFFFF';
-        this.ctx.fillRect(20, -5, 10, 10); // The "Sword" tip
+        
+        // Render Sword swing if attacking (From Code A logic, Code B style)
+        if (hero.isAttacking && hero.weapon === 'SWORD') {
+            this.ctx.fillStyle = '#FFF';
+            this.ctx.shadowBlur = 20;
+            this.ctx.fillRect(15, -40, 10, 80); // Big swing visual
+        } else {
+             // Idle pointer/sword
+            this.ctx.fillStyle = '#FFFFFF';
+            this.ctx.shadowBlur = 0;
+            this.ctx.fillRect(20, -5, 10, 10); 
+        }
 
         this.ctx.restore();
     }
@@ -141,13 +189,13 @@ export class Renderer {
 
         this.ctx.restore();
     }
-drawEnemy(enemy) {
+
+    drawEnemy(enemy) {
         this.ctx.save();
         this.ctx.translate(enemy.x, enemy.y);
         
-        // Spin effect based on health (spin faster when dying?)
-        // Or just consistent rotation for visual interest
-        this.ctx.rotate(Date.now() / 500 + enemy.type); // Offset rotation by type so they don't sync
+        // Spin effect
+        this.ctx.rotate(Date.now() / 500 + enemy.type); 
 
         this.ctx.fillStyle = enemy.color;
         this.ctx.strokeStyle = '#FFFFFF';
@@ -155,7 +203,7 @@ drawEnemy(enemy) {
 
         // Draw Polygon
         this.ctx.beginPath();
-        const sides = enemy.sides;
+        const sides = enemy.sides || 3; // Default to triangle if undefined
         const r = enemy.radius;
         
         for (let i = 0; i < sides; i++) {
@@ -187,19 +235,20 @@ drawEnemy(enemy) {
     drawPanicArrow(princess) {
         // Blinking Red Arrow above her
         if (Math.floor(Date.now() / 100) % 2 === 0) {
+            this.ctx.save();
             this.ctx.fillStyle = 'red';
             this.ctx.beginPath();
             this.ctx.moveTo(princess.x, princess.y - 40);
             this.ctx.lineTo(princess.x - 10, princess.y - 60);
             this.ctx.lineTo(princess.x + 10, princess.y - 60);
             this.ctx.fill();
+            this.ctx.restore();
         }
     }
 
-    // Visualize the Virtual Joysticks (Crucial for Mobile UX)
     drawJoysticks(input) {
         const drawStick = (stick) => {
-            if (!stick.active) return;
+            if (!stick || !stick.active) return;
             
             this.ctx.save();
             
@@ -219,10 +268,17 @@ drawEnemy(enemy) {
             this.ctx.restore();
         };
 
-        drawStick(input.joysticks.left);
-        drawStick(input.joysticks.right);
+        // Support both single joystick (Code A) and dual (Code B) structures
+        if (input.joystick) drawStick(input.joystick);
+        if (input.joysticks) {
+            drawStick(input.joysticks.left);
+            drawStick(input.joysticks.right);
+        }
     }
 }
+
+// --- UTILS (From Code B) ---
+
 export function resizeCanvas(canvas) {
     const width = window.innerWidth;
     const height = window.innerHeight;
