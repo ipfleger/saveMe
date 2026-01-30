@@ -7,6 +7,7 @@ import Projectile from './entities/projectile.js';
 import { Renderer } from './renderer.js';
 import { InputHandler } from './input.js';
 import { WAVE_DATA, getSpawnPoint } from './wave-data.js';
+import AudioController from './audio.js'; // Import the real audio controller
 
 export default class Game {
     constructor(ctx, width, height) {
@@ -17,12 +18,8 @@ export default class Game {
         this.input = new InputHandler();
         this.renderer = new Renderer(ctx);
         
-        // Placeholder for audio to prevent crashes until fully implemented
-        this.audio = { 
-            init: () => {},
-            playMusic: () => {}, 
-            playSFX: () => {} 
-        }; 
+        // Initialize the real audio system
+        this.audio = new AudioController();
         
         this.reset();
     }
@@ -61,7 +58,8 @@ export default class Game {
 
         // Check for Win Condition first
         if (index >= WAVE_DATA.length) {
-            this.princess.triggerWinSequence();
+            // Pass the audio controller to the princess so she can play the jingle
+            this.princess.triggerWinSequence(this.audio);
             this.state = 'WIN';
             return;
         }
@@ -69,11 +67,9 @@ export default class Game {
         const data = WAVE_DATA[index];
         
         // --- AUDIO LOGIC ---
-        // If it's a Boss Wave, play "Meltdown"
         if (data.isBoss) {
             this.audio.playMusic('boss');
         } 
-        // Otherwise ensure "God Mode" is playing (if not already)
         else {
             this.audio.playMusic('battle');
         }
@@ -123,20 +119,18 @@ export default class Game {
             if (this.state !== 'GAMEOVER') {
                 this.state = 'GAMEOVER';
                 
-                // Play Loss Sound
-                this.audio.playSFX('lose');
+                this.audio.playSFX('lose'); // Play real SFX
                 
                 // Save Score
-                this.storage.saveScore(this.score);
+                // Check if storage exists (it's assigned in main.js)
+                if (this.storage) this.storage.saveScore(this.score);
                 
                 // Update UI
                 const endScreen = document.getElementById('end-screen');
                 endScreen.classList.remove('hidden');
                 
-                // Show current score
                 document.getElementById('final-score').innerText = this.score;
                 
-                // Update title based on if they won or lost
                 const title = document.getElementById('end-title');
                 title.innerText = (this.princess.health > 0 && this.hero.health > 0) ? "YOU WIN" : "GAME OVER";
                 title.style.color = (this.princess.health > 0) ? "#FF007F" : "white";
@@ -151,12 +145,10 @@ export default class Game {
                 const data = WAVE_DATA[this.waveIndex];
                 const pt = getSpawnPoint(this.width, this.height);
                 
-                // Pick random type from wave config
                 let type = data.types[Math.floor(Math.random() * data.types.length)];
                 
-                // If boss wave, force boss on last spawn
                 if (data.isBoss && this.enemiesToSpawn === 1) {
-                    type = (this.waveIndex === 9) ? 9 : 5; // Final Boss or MiniBoss
+                    type = (this.waveIndex === 9) ? 9 : 5; 
                 }
 
                 this.enemies.push(new Enemy(pt.x, pt.y, type));
@@ -165,20 +157,17 @@ export default class Game {
             }
         } 
         else if (this.enemies.length === 0) {
-            // Wave Complete
             this.startWave(this.waveIndex + 1);
         }
     }
 
-    // --- THE COMBAT LOGIC ---
     checkCollisions() {
         // A. Hero Attack Handling
         if (this.hero.isAttacking) {
-            
-            // 1. SWORD LOGIC (Arc Collision)
+            // 1. SWORD LOGIC
             if (this.hero.weapon === 'sword') {
                 const reach = this.hero.powerups.giantSword ? 100 : 60;
-                const swingArc = 1.5; // Radians (~90 degrees)
+                const swingArc = 1.5; 
 
                 this.enemies.forEach(enemy => {
                     const dx = enemy.x - this.hero.x;
@@ -186,26 +175,22 @@ export default class Game {
                     const dist = Math.sqrt(dx*dx + dy*dy);
 
                     if (dist < reach) {
-                        // Check angle to see if enemy is "in front"
                         const angleToEnemy = Math.atan2(dy, dx);
                         let angleDiff = angleToEnemy - this.hero.angle;
                         
-                        // Normalize angle (-PI to PI)
                         while (angleDiff > Math.PI) angleDiff -= Math.PI*2;
                         while (angleDiff < -Math.PI) angleDiff += Math.PI*2;
 
                         if (Math.abs(angleDiff) < swingArc / 2) {
-                            this.damageEnemy(enemy, 50); // High damage
-                            // Pushback
+                            this.damageEnemy(enemy, 50);
                             enemy.x += Math.cos(angleToEnemy) * 20;
                             enemy.y += Math.sin(angleToEnemy) * 20;
                         }
                     }
                 });
-                this.hero.isAttacking = false; // Reset flag immediately after checking
+                this.hero.isAttacking = false;
             }
-            
-            // 2. BOW LOGIC (Spawn Projectile)
+            // 2. BOW LOGIC
             else if (this.hero.weapon === 'bow') {
                 this.audio.playSFX('shoot');
                 this.projectiles.push(new Projectile(this.hero.x, this.hero.y, this.hero.angle, 'arrow'));
@@ -220,7 +205,6 @@ export default class Game {
 
         // B. Projectile vs Enemy
         this.projectiles.forEach(proj => {
-            // Screen bounds
             if (proj.x < 0 || proj.x > this.width || proj.y < 0 || proj.y > this.height) {
                 proj.toRemove = true;
             }
@@ -247,15 +231,12 @@ export default class Game {
             this.score += enemy.scoreValue;
             document.getElementById('scoreVal').innerText = this.score;
             
-            // Charge Temples
             this.temples.forEach(t => t.absorbSoul());
 
-            // Spawn Particles (The Juice!)
             for(let i=0; i<5; i++) {
                 this.particles.push(new Particle(enemy.x, enemy.y, enemy.color));
             }
             
-            // Screen Shake
             this.renderer.addShake(5);
         }
     }
@@ -268,17 +249,12 @@ export default class Game {
 
     draw() {
         this.renderer.clear();
-        
-        // Draw Order: Temples -> Particles -> Projectiles -> Princess -> Enemies -> Hero
         this.temples.forEach(t => t.draw(this.ctx));
         this.particles.forEach(p => p.draw(this.ctx));
         this.projectiles.forEach(p => p.draw(this.ctx));
-        
         this.renderer.drawPrincess(this.princess);
         this.enemies.forEach(e => this.renderer.drawEnemy(e));
-        this.renderer.drawHero(this.hero, this.input); // Hero on top
-        
-        // Draw Input UI
+        this.renderer.drawHero(this.hero, this.input);
         this.renderer.drawJoysticks(this.input);
     }
 }
