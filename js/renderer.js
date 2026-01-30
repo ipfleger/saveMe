@@ -141,7 +141,49 @@ export class Renderer {
 
         this.ctx.restore();
     }
+drawEnemy(enemy) {
+        this.ctx.save();
+        this.ctx.translate(enemy.x, enemy.y);
+        
+        // Spin effect based on health (spin faster when dying?)
+        // Or just consistent rotation for visual interest
+        this.ctx.rotate(Date.now() / 500 + enemy.type); // Offset rotation by type so they don't sync
 
+        this.ctx.fillStyle = enemy.color;
+        this.ctx.strokeStyle = '#FFFFFF';
+        this.ctx.lineWidth = 2;
+
+        // Draw Polygon
+        this.ctx.beginPath();
+        const sides = enemy.sides;
+        const r = enemy.radius;
+        
+        for (let i = 0; i < sides; i++) {
+            const angle = (i * 2 * Math.PI) / sides;
+            const px = r * Math.cos(angle);
+            const py = r * Math.sin(angle);
+            if (i === 0) this.ctx.moveTo(px, py);
+            else this.ctx.lineTo(px, py);
+        }
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.stroke();
+
+        // Boss Health Bar (Floating above head if boss)
+        if (enemy.type === 5 || enemy.type === 9) {
+            this.ctx.restore(); // Reset rotation
+            this.ctx.save();
+            this.ctx.translate(enemy.x, enemy.y);
+            
+            this.ctx.fillStyle = 'red';
+            this.ctx.fillRect(-20, -r - 15, 40, 5);
+            this.ctx.fillStyle = '#00ff00';
+            this.ctx.fillRect(-20, -r - 15, 40 * (enemy.health / enemy.maxHealth), 5);
+        }
+
+        this.ctx.restore();
+    }
+    
     drawPanicArrow(princess) {
         // Blinking Red Arrow above her
         if (Math.floor(Date.now() / 100) % 2 === 0) {
