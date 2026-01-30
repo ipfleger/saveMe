@@ -17,7 +17,12 @@ export default class Game {
         this.input = new InputHandler();
         this.renderer = new Renderer(ctx);
         
-        this.audio = { play: () => {} }; // Placeholder for audio.js later
+        // Placeholder for audio to prevent crashes until fully implemented
+        this.audio = { 
+            init: () => {},
+            playMusic: () => {}, 
+            playSFX: () => {} 
+        }; 
         
         this.reset();
     }
@@ -48,15 +53,22 @@ export default class Game {
 
     start() {
         this.state = 'PLAY';
-        this.(0);
+        this.startWave(0);
     }
 
     startWave(index) {
         this.waveIndex = index;
-        
-        // --- NEW AUDIO LOGIC ---
+
+        // Check for Win Condition first
+        if (index >= WAVE_DATA.length) {
+            this.princess.triggerWinSequence();
+            this.state = 'WIN';
+            return;
+        }
+
         const data = WAVE_DATA[index];
-        https://github.com/ipfleger/saveMe/tree/main/js
+        
+        // --- AUDIO LOGIC ---
         // If it's a Boss Wave, play "Meltdown"
         if (data.isBoss) {
             this.audio.playMusic('boss');
@@ -65,13 +77,7 @@ export default class Game {
         else {
             this.audio.playMusic('battle');
         }
-        if (index >= WAVE_DATA.length) {
-            this.princess.triggerWinSequence();
-            this.state = 'WIN';
-            return;
-        }
         
-        const data = WAVE_DATA[index];
         this.enemiesToSpawn = data.count;
         this.waveTimer = 0;
         console.log(`Starting Wave ${index + 1}`);
@@ -107,37 +113,35 @@ export default class Game {
         // 4. COMBAT & COLLISIONS (The Core System)
         this.checkCollisions();
         
-        // 5. Cleanup  Objects
-        this.enemies = this.enemies.filter(e => !e.is);
+        // 5. Cleanup Objects
+        this.enemies = this.enemies.filter(e => !e.isDead);
         this.projectiles = this.projectiles.filter(p => !p.toRemove);
         this.particles = this.particles.filter(p => p.life > 0);
 
         // 6. Game Over Check
-// Inside Game.update()
-
-if (this.princess.health <= 0 || this.hero.health <= 0) {
-    if (this.state !== 'GAMEOVER') {
-        this.state = 'GAMEOVER';
-        
-        // Play Loss Sound
-        this.audio.playSFX('lose'); // (Optional if you add a lose sound)
-        
-        // Save Score
-        this.storage.saveScore(this.score);
-        
-        // Update UI
-        const endScreen = document.getElementById('end-screen');
-        endScreen.classList.remove('hidden');
-        
-        // Show current score
-        document.getElementById('final-score').innerText = this.score;
-        
-        // Update title based on if they won or lost
-        const title = document.getElementById('end-title');
-        title.innerText = (this.princess.health > 0 && this.hero.health > 0) ? "YOU WIN" : "GAME OVER";
-        title.style.color = (this.princess.health > 0) ? "#FF007F" : "white";
-    }
-}
+        if (this.princess.health <= 0 || this.hero.health <= 0) {
+            if (this.state !== 'GAMEOVER') {
+                this.state = 'GAMEOVER';
+                
+                // Play Loss Sound
+                this.audio.playSFX('lose');
+                
+                // Save Score
+                this.storage.saveScore(this.score);
+                
+                // Update UI
+                const endScreen = document.getElementById('end-screen');
+                endScreen.classList.remove('hidden');
+                
+                // Show current score
+                document.getElementById('final-score').innerText = this.score;
+                
+                // Update title based on if they won or lost
+                const title = document.getElementById('end-title');
+                title.innerText = (this.princess.health > 0 && this.hero.health > 0) ? "YOU WIN" : "GAME OVER";
+                title.style.color = (this.princess.health > 0) ? "#FF007F" : "white";
+            }
+        }
     }
 
     handleSpawning(dt) {
@@ -237,8 +241,8 @@ if (this.princess.health <= 0 || this.hero.health <= 0) {
     }
 
     damageEnemy(enemy, amount) {
-        const  = enemy.takeDamage(amount);
-        if (dead) {
+        const isDead = enemy.takeDamage(amount);
+        if (isDead) {
             this.audio.playSFX('hit'); 
             this.score += enemy.scoreValue;
             document.getElementById('scoreVal').innerText = this.score;
