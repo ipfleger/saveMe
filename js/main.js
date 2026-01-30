@@ -36,10 +36,15 @@ document.getElementById('start-btn').addEventListener('click', () => {
     // Audio context requires user interaction to start
     game.audio.init(); 
     game.start();
+    // Hide start screen and show HUD
+    document.getElementById('start-screen').classList.add('hidden');
+    document.getElementById('hud').classList.remove('hidden');
     requestAnimationFrame(loop);
 });
 
 document.getElementById('retry-btn').addEventListener('click', () => {
+    // Hide end screen
+    document.getElementById('end-screen').classList.add('hidden');
     game.reset();
     game.start();
 });
