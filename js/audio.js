@@ -10,13 +10,13 @@ export default class AudioController {
         this.musicVolume = 0.4;
         this.sfxVolume = 0.6;
 
-        // Frequencies (From your file)
+        // Frequencies
         this.N = {
             'c2':65.41,'d2':73.42,'e2':82.41,'f2':87.31,'g2':98.00,'a2':110.00,'b2':123.47,
             'c3':130.81,'d3':146.83,'e3':164.81,'f3':174.61,'g3':196.00,'gs3':207.65,'a3':220.00,'bb3':233.08,'b3':246.94,
             'c4':261.63,'cs4':277.18,'d4':293.66,'e4':329.63,'f4':349.23,'fs4':369.99,'g4':392.00,'gs4':415.30,'a4':440.00,'b4':493.88,
             'c5':523.25,'cs5':554.37,'d5':587.33,'ds5':622.25,'e5':659.25,'f5':698.46,'fs5':739.99,'g5':783.99,'gs5':830.61,'a5':880.00,'b5':987.77,
-            'c6':1046.50,'d6':1174.66,'e6':1318.51, 'g6': 1567.98 // Added g6 for jingle
+            'c6':1046.50,'d6':1174.66,'e6':1318.51, 'g6': 1567.98
         };
 
         // Song Definitions
@@ -30,42 +30,42 @@ export default class AudioController {
             // "God Mode" -> STANDARD BATTLE
             battle: { 
                 tempo: 165, wave: 'square', bassWave: 'sawtooth', hasDrums: true,
-                melody: ['a4',null,'a4','c5', 'e5',null,'d5','c5', 'b4',null,'g4','b4', 'd5',null,'c5','b4', 'a4',null,'e5',null, 'a5',null,'g5','e5', 'f5','e5','d5','c5', 'b4','c5','b4','g4', 'a4','a4','c5','c5', 'e5','e5','a5','a5'],
+                melody: ['a4',null,'a4','c5', 'e5',null,'d5','c5', 'b4',null,'g4','b4', 'd5',null,'c5','b4', 'a4',null,'e5',null, 'a5',null,'g5','e5', 'f5','e5','d5','c5', 'b4','c5','b4','g4', 'a4',null,'a4','c5', 'e5',null,'d5','c5', 'b4',null,'g4','b4', 'd5',null,'c5','b4', 'a4',null,'e5',null, 'a5',null,'g5','e5', 'f5','e5','d5','c5', 'b4','c5','b4','g4'],
                 bass: ['a2','a2','a2','a2', 'g2','g2','g2','g2', 'f2','f2','f2','f2', 'e2','e2','e2','e2', 'a2','a2','a2','a2', 'a2','a2','a2','a2']
             },
             // "Meltdown" -> BOSS / MINIBOSS
             boss: { 
                 tempo: 200, wave: 'sawtooth', bassWave: 'square',
-                melody: ['e4','f4','fs4','g4', 'gs4','a4','as4','b4', 'c5','b4','bb4','a4', 'gs4','g4','fs4','f4', 'e4','bb4','e4','bb4', 'e4','bb4','e4','bb4', 'f5','e5','ds5','d5', 'cs5','c5','b4','bb4', 'e4','e5','e4','e5', 'e4','e5','e4','e5'],
+                melody: ['e4','f4','fs4','g4', 'gs4','a4','as4','b4', 'c5','b4','bb4','a4', 'gs4','g4','fs4','f4', 'e4','bb4','e4','bb4', 'e4','bb4','e4','bb4', 'f5','e5','ds5','d5', 'cs5','c5','b4','bb4'],
                 bass: ['e2','e2','e2','e2', 'e2','e2','e2','e2', 'bb2','bb2','bb2','bb2', 'e2','e2','bb2','bb2', 'e2','f2','fs2','g2', 'gs2','a2','bb2','b2']
             },
             // "Pure Peace" -> WIN SCREEN
             win: { 
                 tempo: 55, wave: 'sine', bassWave: 'sine',
-                melody: ['e4',null,null,null, 'f4',null,null,null, 'g4',null,null,null, null,null,null,null, 'c5',null,'b4',null, 'a4',null,'g4',null, 'e4',null,null,null, 'c4',null,null,null, 'd4',null,null,null, 'c4',null,null,null, null,null,null,null, null,null,null,null],
+                melody: ['e4',null,null,null, 'f4',null,null,null, 'g4',null,null,null, null,null,null,null, 'c5',null,'b4',null, 'a4',null,'g4',null, 'e4',null,null,null, 'c4',null,null,null, 'd4',null,null,null],
                 bass: ['c3',null,null,null, 'f3',null,null,null, 'c3',null,null,null, 'e3',null,null,null, 'f3',null,null,null, 'g3',null,null,null, 'c3',null,null,null, null,null,null,null]
             },
+            // "The Void" - Perfect for Game Over
             lose: { 
-        // "The Void" - Perfect for Game Over
-        tempo: 60, 
-        wave: 'triangle', 
-        bassWave: 'sine', 
-        melody: [
-            'd4',null,null,null, 'cs4',null,null,null, 
-            null,null,'f4',null, 'e4',null,null,null,
-            'bb3',null,null,null, 'a3',null,null,null, 
-            null,null,null,null, 'd3',null,null,null
-        ],
-        bass: [
-            'd2',null,null,null, 'a1',null,null,null,
-            'd2',null,null,null, 'a1',null,null,null,
-            'g1',null,null,null, 'a1',null,null,null,
-            'd1',null,null,null, 'd1',null,null,null
-        ]
-    },
+                tempo: 60, 
+                wave: 'triangle', 
+                bassWave: 'sine', 
+                melody: [
+                    'd4',null,null,null, 'cs4',null,null,null, 
+                    null,null,'f4',null, 'e4',null,null,null,
+                    'bb3',null,null,null, 'a3',null,null,null, 
+                    null,null,null,null, 'd3',null,null,null
+                ],
+                bass: [
+                    'd2',null,null,null, 'a1',null,null,null,
+                    'd2',null,null,null, 'a1',null,null,null,
+                    'g1',null,null,null, 'a1',null,null,null,
+                    'd1',null,null,null, 'd1',null,null,null
+                ]
+            }, // <--- The critical comma
             // "Celebratory Ditty" -> VICTORY JINGLE
             jingle: {
-                tempo: 300, wave: 'square', bassWave: 'triangle', loop: false, // Fast and runs once
+                tempo: 300, wave: 'square', bassWave: 'triangle', loop: false, 
                 melody: ['c4','e4','g4','c5', 'e5','g5','c6','e6', 'g6',null,'c6',null], 
                 bass:   ['c3',null,'e3',null, 'g3',null,'c4',null, 'e4',null,'c3',null]
             }
@@ -77,7 +77,9 @@ export default class AudioController {
         if (!this.ctx) {
             this.ctx = new (window.AudioContext || window.webkitAudioContext)();
         }
-        this.ctx.resume();
+        if (this.ctx.state === 'suspended') {
+            this.ctx.resume();
+        }
     }
 
     playMusic(trackName) {
@@ -179,29 +181,27 @@ export default class AudioController {
     }
 
     // --- SOUND EFFECTS (SFX) ---
-    // Simple synthesized sounds so we don't need files
-    
     playSFX(type) {
         this.init();
         const now = this.ctx.currentTime;
         
         if (type === 'shoot') {
-            // High pitch decay (Pew)
             this.playTone(600, 'square', now, 0.1, 0.1 * this.sfxVolume);
         } 
         else if (type === 'hit') {
-            // Low noise crunch
             this.playNoise(now, 0.1);
         } 
         else if (type === 'powerup') {
-            // Ascending major third
             this.playTone(this.N['c5'], 'sine', now, 0.1, 0.2 * this.sfxVolume);
             this.playTone(this.N['e5'], 'sine', now + 0.1, 0.3, 0.2 * this.sfxVolume);
         }
         else if (type === 'warning') {
-            // Two rapid low notes
             this.playTone(150, 'sawtooth', now, 0.1, 0.2 * this.sfxVolume);
             this.playTone(150, 'sawtooth', now + 0.15, 0.1, 0.2 * this.sfxVolume);
+        }
+        else if (type === 'lose') {
+            this.playTone(100, 'sawtooth', now, 0.5, 0.3 * this.sfxVolume);
+            this.playTone(80, 'sawtooth', now + 0.4, 0.5, 0.3 * this.sfxVolume);
         }
     }
 }
