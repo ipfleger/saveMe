@@ -1,12 +1,14 @@
 import Game from './game.js';
-import { setupInput } from './input.js';
+import { StorageManager } from './storage.js'; // Import Storage
 import { resizeCanvas } from './renderer.js';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-
-// Initialize Game Engine
 const game = new Game(ctx, canvas.width, canvas.height);
+const storage = new StorageManager(); // Initialize Storage
+
+// 1. Show High Scores on Start Screen
+document.getElementById('high-scores').innerHTML = storage.getHighScoresHTML();
 
 // Handle Window Resizing (Mobile rotation)
 window.addEventListener('resize', () => {
