@@ -57,15 +57,16 @@ export default class Princess {
         }
     }
 
-    // Called when Wave 10 is cleared
-    triggerWinSequence() {
-        this.audio.playMusic('jingle');
+    // UPDATED: Now accepts audioController as an argument
+    triggerWinSequence(audioController) {
+        if (audioController) audioController.playMusic('jingle');
 
         this.state = 'WIN_RUN';
-            setTimeout(() => {
-        if (this.state === 'WIN_RUN') { // Ensure we are still in win state
-            this.audio.playMusic('win');
-        }
-    }, 2000);
+        
+        setTimeout(() => {
+            if (this.state === 'WIN_RUN') { // Ensure we are still in win state
+                if (audioController) audioController.playMusic('win');
+            }
+        }, 2000);
     }
 }
