@@ -1,6 +1,6 @@
 import Hero from './entities/hero.js';
 import Princess from './entities/princess.js';
-import Enemy from './entities/enemy.js';
+import { Enemy } from './entities/enemy.js';
 import Temple from './entities/temple.js';
 import Particle from './entities/particle.js';
 import Projectile from './entities/projectile.js';
