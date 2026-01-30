@@ -7,6 +7,8 @@ const Game = {
     princess: null,
     temple: null,
     enemies: [],
+    invulnerable: false,
+    invulnerabilityTimer: 0,
     
     init: function() {
         // Initialize game objects
@@ -37,6 +39,8 @@ const Game = {
         this.princess.spawn();
         this.enemies = [];
         this.spawnEnemies(INITIAL_ENEMY_COUNT);
+        this.invulnerable = false;
+        this.invulnerabilityTimer = 0;
         ParticleSystem.clear();
         Audio.playBackgroundMusic();
         this.updateUI();
@@ -44,6 +48,14 @@ const Game = {
     
     update: function() {
         if (this.state !== GAME_STATE.PLAYING) return;
+        
+        // Update invulnerability timer
+        if (this.invulnerable) {
+            this.invulnerabilityTimer--;
+            if (this.invulnerabilityTimer <= 0) {
+                this.invulnerable = false;
+            }
+        }
         
         // Update hero
         this.hero.update();
@@ -84,27 +96,37 @@ const Game = {
             this.updateUI();
         }
         
-        // Check collision with enemies
-        for (let enemy of this.enemies) {
-            if (this.hero.collidesWith(enemy)) {
-                this.lives--;
-                this.updateUI();
-                
-                ParticleSystem.createExplosion(
-                    this.hero.x + this.hero.size / 2,
-                    this.hero.y + this.hero.size / 2,
-                    '#e74c3c'
-                );
-                
-                if (this.lives <= 0) {
-                    this.gameOver();
-                } else {
-                    // Reset hero position
-                    this.hero.reset();
-                    this.princess.spawn();
+        // Check collision with enemies (only if not invulnerable)
+        if (!this.invulnerable) {
+            for (let enemy of this.enemies) {
+                if (this.hero.collidesWith(enemy)) {
+                    this.lives--;
+                    this.updateUI();
+                    
+                    ParticleSystem.createExplosion(
+                        this.hero.x + this.hero.size / 2,
+                        this.hero.y + this.hero.size / 2,
+                        '#e74c3c'
+                    );
+                    
+                    if (this.lives <= 0) {
+                        this.gameOver();
+                    } else {
+                        // Reset hero position and make invulnerable
+                        this.hero.reset();
+                        this.invulnerable = true;
+                        this.invulnerabilityTimer = 60; // 1 second at 60 FPS
+                        // Only respawn princess if not already rescued
+                        if (!this.princess.rescued) {
+                            this.princess.spawn();
+                        } else {
+                            // If princess was rescued, spawn a new one
+                            this.princess.spawn();
+                        }
+                    }
+                    
+                    break;
                 }
-                
-                break;
             }
         }
     },

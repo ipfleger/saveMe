@@ -26,6 +26,7 @@
         // Start button
         document.getElementById('startButton').addEventListener('click', () => {
             document.getElementById('menu').classList.add('hidden');
+            document.getElementById('game-container').classList.remove('hidden');
             Game.start();
         });
         
@@ -44,6 +45,7 @@
         // Restart button
         document.getElementById('restartButton').addEventListener('click', () => {
             document.getElementById('gameOver').classList.add('hidden');
+            document.getElementById('game-container').classList.remove('hidden');
             Game.start();
         });
     }
