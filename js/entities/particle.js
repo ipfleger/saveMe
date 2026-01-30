@@ -1,62 +1,31 @@
-// Particle Entity - Visual effects
-class Particle {
-    constructor(x, y, vx, vy, color) {
+export default class Particle {
+    constructor(x, y, color) {
         this.x = x;
         this.y = y;
-        this.vx = vx;
-        this.vy = vy;
-        this.size = Math.random() * 3 + 2;
-        this.color = color || '#fff';
-        this.life = PARTICLE_LIFE;
-    }
-    
-    update() {
-        this.x += this.vx;
-        this.y += this.vy;
-        this.life--;
+        this.color = color;
         
-        // Apply gravity
-        this.vy += 0.1;
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 100 + 50;
+        
+        this.velX = Math.cos(angle) * speed;
+        this.velY = Math.sin(angle) * speed;
+        
+        this.life = 1.0; // 1 second lifespan
+        this.decay = Math.random() * 2 + 1; // How fast it fades
+        this.size = Math.random() * 5 + 2;
     }
-    
-    isDead() {
-        return this.life <= 0;
+
+    update(dt) {
+        this.x += this.velX * dt;
+        this.y += this.velY * dt;
+        this.life -= this.decay * dt;
     }
-    
-    draw() {
-        Renderer.drawParticle(this);
+
+    draw(ctx) {
+        ctx.save();
+        ctx.globalAlpha = this.life;
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x, this.y, this.size, this.size);
+        ctx.restore();
     }
 }
-
-// Particle system manager
-const ParticleSystem = {
-    particles: [],
-    
-    // Create particle explosion
-    createExplosion: function(x, y, color) {
-        for (let i = 0; i < PARTICLE_COUNT; i++) {
-            const angle = (Math.PI * 2 * i) / PARTICLE_COUNT;
-            const speed = Math.random() * 3 + 2;
-            const vx = Math.cos(angle) * speed;
-            const vy = Math.sin(angle) * speed;
-            
-            this.particles.push(new Particle(x, y, vx, vy, color));
-        }
-    },
-    
-    update: function() {
-        // Update all particles
-        this.particles.forEach(particle => particle.update());
-        
-        // Remove dead particles
-        this.particles = this.particles.filter(particle => !particle.isDead());
-    },
-    
-    draw: function() {
-        this.particles.forEach(particle => particle.draw());
-    },
-    
-    clear: function() {
-        this.particles = [];
-    }
-};
