@@ -62,7 +62,7 @@ export default class AudioController {
             'g1',null,null,null, 'a1',null,null,null,
             'd1',null,null,null, 'd1',null,null,null
         ]
-    }
+    },
             // "Celebratory Ditty" -> VICTORY JINGLE
             jingle: {
                 tempo: 300, wave: 'square', bassWave: 'triangle', loop: false, // Fast and runs once
