@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>saveMe!</title>
+    <title>Hero</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,22 +12,36 @@
     <div id="ui-layer">
         
         <div id="hud" class="hidden">
-            <div class="score">Score: <span id="scoreVal">0</span></div>
-            <div class="wave">Wave: <span id="waveVal">1</span>/10</div>
-            <div id="princess-alert" class="hidden">PRINCESS NEEDS HELP!</div>
-            <div id="boss-hp-bar" class="hidden"><div class="fill"></div></div>
+            <div class="top-bar">
+                <div class="score">Score: <span id="scoreVal">0</span></div>
+                <div class="wave">Wave: <span id="waveVal">1</span>/10</div>
+            </div>
+            
+            <div id="princess-alert" class="hidden">PROTECT THE PRINCESS!</div>
+
+            <div id="boss-hp-bar" class="hidden">
+                <div class="fill"></div>
+            </div>
         </div>
 
         <div id="start-screen" class="panel">
-            <h1>Hero</h1>
-            <p>Protect the Princess!</p>
+            <h1>Geo Guardian</h1>
+            <p class="tagline">Protect the Princess!</p>
+            
+            <div class="instructions">
+                <p><strong>Controls:</strong></p>
+                <p>Left Stick: Move</p>
+                <p>Right Stick: Aim & Shoot</p>
+                <p class="sub-text"><em>(Or Tap to Shoot / Swipe to Slash)</em></p>
+            </div>
+
             <button id="start-btn">TAP TO START</button>
             <div id="high-scores"></div>
         </div>
 
         <div id="end-screen" class="panel hidden">
             <h1 id="end-title">Game Over</h1>
-            <p>Score: <span id="final-score"></span></p>
+            <p>Final Score: <span id="final-score">0</span></p>
             <button id="retry-btn">TRY AGAIN</button>
         </div>
 
