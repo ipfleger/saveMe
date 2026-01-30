@@ -43,3 +43,5 @@ document.getElementById('retry-btn').addEventListener('click', () => {
     game.reset();
     game.start();
 });
+
+game.storage = storage;
