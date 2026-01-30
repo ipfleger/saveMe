@@ -48,11 +48,23 @@ export default class Game {
 
     start() {
         this.state = 'PLAY';
-        this.startWave(0);
+        this.(0);
     }
 
     startWave(index) {
         this.waveIndex = index;
+        
+        // --- NEW AUDIO LOGIC ---
+        const data = WAVE_DATA[index];
+        https://github.com/ipfleger/saveMe/tree/main/js
+        // If it's a Boss Wave, play "Meltdown"
+        if (data.isBoss) {
+            this.audio.playMusic('boss');
+        } 
+        // Otherwise ensure "God Mode" is playing (if not already)
+        else {
+            this.audio.playMusic('battle');
+        }
         if (index >= WAVE_DATA.length) {
             this.princess.triggerWinSequence();
             this.state = 'WIN';
