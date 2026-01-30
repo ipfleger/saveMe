@@ -223,3 +223,21 @@ drawEnemy(enemy) {
         drawStick(input.joysticks.right);
     }
 }
+export function resizeCanvas(canvas) {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    
+    // Handle High DPI displays (Retina)
+    const dpr = window.devicePixelRatio || 1;
+    
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    
+    return { width, height };
+}
