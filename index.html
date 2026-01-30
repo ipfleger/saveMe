@@ -2,46 +2,38 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Save Me - Save the Princess!</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GeoGuardian</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="game-container" class="hidden">
-        <canvas id="gameCanvas"></canvas>
-        <div id="ui-overlay">
-            <div id="score">Score: 0</div>
-            <div id="lives">Lives: 3</div>
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="ui-layer">
+        
+        <div id="hud" class="hidden">
+            <div class="score">Score: <span id="scoreVal">0</span></div>
+            <div class="wave">Wave: <span id="waveVal">1</span>/10</div>
+            <div id="princess-alert" class="hidden">PRINCESS NEEDS HELP!</div>
+            <div id="boss-hp-bar" class="hidden"><div class="fill"></div></div>
         </div>
-    </div>
-    <div id="menu">
-        <h1>Save the Princess!</h1>
-        <button id="startButton">Start Game</button>
-        <button id="instructionsButton">Instructions</button>
-    </div>
-    <div id="instructions" class="hidden">
-        <h2>How to Play</h2>
-        <p>Use arrow keys to move the hero and save the princess from enemies!</p>
-        <button id="backButton">Back</button>
-    </div>
-    <div id="gameOver" class="hidden">
-        <h2>Game Over</h2>
-        <p id="finalScore"></p>
-        <button id="restartButton">Restart</button>
+
+        <div id="start-screen" class="panel">
+            <h1>GeoGuardian</h1>
+            <p>Protect the Princess!</p>
+            <button id="start-btn">TAP TO START</button>
+            <div id="high-scores"></div>
+        </div>
+
+        <div id="end-screen" class="panel hidden">
+            <h1 id="end-title">Game Over</h1>
+            <p>Score: <span id="final-score"></span></p>
+            <button id="retry-btn">TRY AGAIN</button>
+        </div>
+
+        <div id="controls-area"></div>
     </div>
 
-    <!-- Load game scripts -->
-    <script src="js/constants.js"></script>
-    <script src="js/storage.js"></script>
-    <script src="js/audio.js"></script>
-    <script src="js/entities/particle.js"></script>
-    <script src="js/entities/hero.js"></script>
-    <script src="js/entities/princess.js"></script>
-    <script src="js/entities/enemy.js"></script>
-    <script src="js/entities/temple.js"></script>
-    <script src="js/renderer.js"></script>
-    <script src="js/input.js"></script>
-    <script src="js/game.js"></script>
-    <script src="js/main.js"></script>
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>
