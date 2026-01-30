@@ -1,44 +1,27 @@
-// Game constants
-const CANVAS_WIDTH = 800;
-const CANVAS_HEIGHT = 600;
-const FPS = 60;
+// System Config
+export const STORAGE_KEY = 'geo_guardian_ranks_v1';
+export const IS_MOBILE = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-// Player constants
-const PLAYER_SIZE = 40;
-const PLAYER_SPEED = 5;
-const PLAYER_COLOR = '#3498db';
+// Performance Tuning
+// Reduce particles on mobile to prevent lag
+export const MAX_PARTICLES = IS_MOBILE ? 50 : 200; 
 
-// Princess constants
-const PRINCESS_SIZE = 40;
-const PRINCESS_COLOR = '#e74c3c';
-
-// Enemy constants
-const ENEMY_SIZE = 35;
-const ENEMY_SPEED = 2;
-const ENEMY_COLOR = '#c0392b';
-const INITIAL_ENEMY_COUNT = 3;
-const MAX_ENEMIES = 10;
-
-// Temple constants
-const TEMPLE_SIZE = 60;
-const TEMPLE_COLOR = '#f39c12';
-
-// Particle constants
-const PARTICLE_COUNT = 20;
-const PARTICLE_LIFE = 30;
-
-// Game states
-const GAME_STATE = {
-    MENU: 'menu',
-    PLAYING: 'playing',
-    PAUSED: 'paused',
-    GAME_OVER: 'gameOver',
-    INSTRUCTIONS: 'instructions'
+// Colors (The Geometric Aesthetic)
+export const COLORS = {
+    background: '#2c3e50',
+    hero: '#00FFFF',   // Cyan
+    princess: '#FF007F', // Deep Pink
+    text: '#FFFFFF',
+    uiOverlay: 'rgba(0, 0, 0, 0.7)',
+    
+    // Temple Themes
+    templeNorth: '#FF4500', // Fire
+    templeSouth: '#00CED1', // Ice/Speed
+    templeEast: '#32CD32',  // Nature/Spread
+    templeWest: '#FFD700'   // Holy/Giant
 };
 
-// Scoring
-const POINTS_PER_SAVE = 100;
-const POINTS_PER_ENEMY_AVOID = 10;
-
-// Lives
-const INITIAL_LIVES = 3;
+// Gameplay Constants
+export const HERO_SPEED_CAP = 350;
+export const PRINCESS_MAX_HP = 100;
+export const CRITICAL_HIT_MULTIPLIER = 2.0;
