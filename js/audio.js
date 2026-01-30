@@ -45,6 +45,24 @@ export default class AudioController {
                 melody: ['e4',null,null,null, 'f4',null,null,null, 'g4',null,null,null, null,null,null,null, 'c5',null,'b4',null, 'a4',null,'g4',null, 'e4',null,null,null, 'c4',null,null,null, 'd4',null,null,null, 'c4',null,null,null, null,null,null,null, null,null,null,null],
                 bass: ['c3',null,null,null, 'f3',null,null,null, 'c3',null,null,null, 'e3',null,null,null, 'f3',null,null,null, 'g3',null,null,null, 'c3',null,null,null, null,null,null,null]
             },
+            lose: { 
+        // "The Void" - Perfect for Game Over
+        tempo: 60, 
+        wave: 'triangle', 
+        bassWave: 'sine', 
+        melody: [
+            'd4',null,null,null, 'cs4',null,null,null, 
+            null,null,'f4',null, 'e4',null,null,null,
+            'bb3',null,null,null, 'a3',null,null,null, 
+            null,null,null,null, 'd3',null,null,null
+        ],
+        bass: [
+            'd2',null,null,null, 'a1',null,null,null,
+            'd2',null,null,null, 'a1',null,null,null,
+            'g1',null,null,null, 'a1',null,null,null,
+            'd1',null,null,null, 'd1',null,null,null
+        ]
+    }
             // "Celebratory Ditty" -> VICTORY JINGLE
             jingle: {
                 tempo: 300, wave: 'square', bassWave: 'triangle', loop: false, // Fast and runs once
