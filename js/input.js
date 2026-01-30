@@ -1,136 +1,148 @@
+// input.js
 export class InputHandler {
     constructor() {
         this.keys = {};
-        this.mouse = { x: 0, y: 0, down: false };
-        this.joysticks = {
-            left: { x: 0, y: 0, active: false, originX: 0, originY: 0, currentX: 0, currentY: 0, id: null },
-            right: { x: 0, y: 0, active: false, originX: 0, originY: 0, currentX: 0, currentY: 0, id: null }
-        };
+        // Left Joystick (Movement)
+        this.joystick = { x: 0, y: 0, active: false, originX: 0, originY: 0, currentX: 0, currentY: 0, id: null };
         
-        // Configuration
-        this.maxStickDistance = 50; // Visual radius of the joystick
-        this.deadZone = 0.1; // Prevent drift
+        // Gesture Tracking
+        this.touchStart = { x: 0, y: 0, time: 0 };
+        this.gestureAction = null; // { type: 'SWIPE'|'TAP'|'HOLD', data: ... }
+        this.holdTimer = null;
+        this.isHolding = false;
 
         this.init();
     }
 
     init() {
-        // Desktop Listeners
+        // Keyboard (Fallback)
         window.addEventListener('keydown', e => this.keys[e.code] = true);
         window.addEventListener('keyup', e => this.keys[e.code] = false);
-        window.addEventListener('mousemove', e => {
-            this.mouse.x = e.clientX;
-            this.mouse.y = e.clientY;
-        });
-        window.addEventListener('mousedown', () => this.mouse.down = true);
-        window.addEventListener('mouseup', () => this.mouse.down = false);
 
-        // Mobile Touch Listeners
-        const canvas = document.getElementById('gameCanvas'); // Attach to canvas to prevent scrolling
+        // Touch Logic
+        const canvas = document.getElementById('gameCanvas');
         
-        canvas.addEventListener('touchstart', e => this.handleTouch(e, true), { passive: false });
-        canvas.addEventListener('touchmove', e => this.handleTouch(e, false), { passive: false });
-        canvas.addEventListener('touchend', e => this.handleTouchEnd(e));
+        canvas.addEventListener('touchstart', e => this.handleStart(e), { passive: false });
+        canvas.addEventListener('touchmove', e => this.handleMove(e), { passive: false });
+        canvas.addEventListener('touchend', e => this.handleEnd(e), { passive: false });
+        
+        // Mouse as Touch (for testing on PC)
+        canvas.addEventListener('mousedown', e => {
+            this.handleStart({ changedTouches: [{ identifier: 999, clientX: e.clientX, clientY: e.clientY }], preventDefault: ()=>{} });
+        });
+        window.addEventListener('mousemove', e => {
+            if (this.joystick.active || this.isHolding) {
+                this.handleMove({ changedTouches: [{ identifier: 999, clientX: e.clientX, clientY: e.clientY }], preventDefault: ()=>{} });
+            }
+        });
+        window.addEventListener('mouseup', e => {
+            this.handleEnd({ changedTouches: [{ identifier: 999, clientX: e.clientX, clientY: e.clientY }], preventDefault: ()=>{} });
+        });
     }
 
-    handleTouch(e, isStart) {
-        e.preventDefault(); // Stop scrolling!
+    handleStart(e) {
+        e.preventDefault();
+        const touch = e.changedTouches[0];
         const width = window.innerWidth;
 
-        for (let i = 0; i < e.changedTouches.length; i++) {
-            const touch = e.changedTouches[i];
-            const halfScreen = width / 2;
-            
-            // Determine which joystick (Left or Right half of screen)
-            let stick = (touch.clientX < halfScreen) ? this.joysticks.left : this.joysticks.right;
-
-            // If starting a touch, set the origin (anchor point)
-            if (isStart && !stick.active) {
-                stick.id = touch.identifier;
-                stick.active = true;
-                stick.originX = touch.clientX;
-                stick.originY = touch.clientY;
-                stick.currentX = touch.clientX;
-                stick.currentY = touch.clientY;
-            } 
-            // If moving the specific finger assigned to this stick
-            else if (stick.id === touch.identifier) {
-                stick.currentX = touch.clientX;
-                stick.currentY = touch.clientY;
+        // LEFT HALF = Movement Joystick
+        if (touch.clientX < width / 2) {
+            if (!this.joystick.active) {
+                this.joystick.id = touch.identifier;
+                this.joystick.active = true;
+                this.joystick.originX = touch.clientX;
+                this.joystick.originY = touch.clientY;
+                this.joystick.currentX = touch.clientX;
+                this.joystick.currentY = touch.clientY;
+                this.updateJoystick();
             }
-
-            this.updateStickVectors(stick);
+        } 
+        // RIGHT HALF = Combat Gestures
+        else {
+            this.touchStart = { x: touch.clientX, y: touch.clientY, time: Date.now() };
+            this.isHolding = false;
+            
+            // Start Hold Timer
+            this.holdTimer = setTimeout(() => {
+                this.isHolding = true;
+                // Signal game to show charging effect
+            }, 300); // 300ms hold triggers magic charge
         }
     }
 
-    handleTouchEnd(e) {
+    handleMove(e) {
+        e.preventDefault();
         for (let i = 0; i < e.changedTouches.length; i++) {
             const touch = e.changedTouches[i];
-            if (this.joysticks.left.id === touch.identifier) this.resetStick(this.joysticks.left);
-            if (this.joysticks.right.id === touch.identifier) this.resetStick(this.joysticks.right);
+            
+            // Move Joystick
+            if (touch.identifier === this.joystick.id) {
+                this.joystick.currentX = touch.clientX;
+                this.joystick.currentY = touch.clientY;
+                this.updateJoystick();
+            }
+            // If holding magic, we might update aim here later
         }
     }
 
-    updateStickVectors(stick) {
-        let dx = stick.currentX - stick.originX;
-        let dy = stick.currentY - stick.originY;
-        const distance = Math.sqrt(dx*dx + dy*dy);
+    handleEnd(e) {
+        e.preventDefault();
+        for (let i = 0; i < e.changedTouches.length; i++) {
+            const touch = e.changedTouches[i];
 
-        // Normalize logic
-        if (distance > this.maxStickDistance) {
-            const angle = Math.atan2(dy, dx);
-            dx = Math.cos(angle) * this.maxStickDistance;
-            dy = Math.sin(angle) * this.maxStickDistance;
+            // Release Joystick
+            if (touch.identifier === this.joystick.id) {
+                this.joystick.active = false;
+                this.joystick.x = 0;
+                this.joystick.y = 0;
+            }
+            // Release Gesture
+            else if (touch.clientX > window.innerWidth / 2 || touch.identifier === 999) {
+                clearTimeout(this.holdTimer);
+                const dt = Date.now() - this.touchStart.time;
+                const dx = touch.clientX - this.touchStart.x;
+                const dy = touch.clientY - this.touchStart.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+
+                if (this.isHolding) {
+                    // RELEASE HOLD -> MAGIC
+                    this.gestureAction = { type: 'MAGIC', x: touch.clientX, y: touch.clientY };
+                } else if (dt < 200 && dist < 20) {
+                    // SHORT TAP -> BOW
+                    this.gestureAction = { type: 'BOW', x: touch.clientX, y: touch.clientY };
+                } else if (dist > 30) {
+                    // SWIPE -> SWORD
+                    const angle = Math.atan2(dy, dx);
+                    this.gestureAction = { type: 'SWORD', angle: angle };
+                }
+                this.isHolding = false;
+            }
         }
-
-        // Output values between -1 and 1
-        stick.x = dx / this.maxStickDistance;
-        stick.y = dy / this.maxStickDistance;
     }
 
-    resetStick(stick) {
-        stick.active = false;
-        stick.id = null;
-        stick.x = 0;
-        stick.y = 0;
-    }
-
-    // Main getter for the game loop to ask "Where do I move?"
-    getInput() {
-        const res = { move: { x: 0, y: 0 }, aim: { x: 0, y: 0 }, isAttacking: false };
-
-        // 1. Mobile Priority
-        if (this.joysticks.left.active) {
-            res.move.x = this.joysticks.left.x;
-            res.move.y = this.joysticks.left.y;
-        }
-        if (this.joysticks.right.active) {
-            res.aim.x = this.joysticks.right.x;
-            res.aim.y = this.joysticks.right.y;
-            // If stick is pushed past 50%, we are attacking
-            res.isAttacking = (Math.abs(res.aim.x) > 0.5 || Math.abs(res.aim.y) > 0.5);
-        }
-
-        // 2. Desktop Fallback (if no mobile input)
-        if (!this.joysticks.left.active) {
-            if (this.keys['KeyW'] || this.keys['ArrowUp']) res.move.y = -1;
-            if (this.keys['KeyS'] || this.keys['ArrowDown']) res.move.y = 1;
-            if (this.keys['KeyA'] || this.keys['ArrowLeft']) res.move.x = -1;
-            if (this.keys['KeyD'] || this.keys['ArrowRight']) res.move.x = 1;
-        }
+    updateJoystick() {
+        const maxDist = 50;
+        let dx = this.joystick.currentX - this.joystick.originX;
+        let dy = this.joystick.currentY - this.joystick.originY;
+        const dist = Math.sqrt(dx*dx + dy*dy);
         
-        // Normalize Keyboard diagonal movement
-        if (res.move.x !== 0 || res.move.y !== 0) {
-            const len = Math.sqrt(res.move.x**2 + res.move.y**2);
-            if (len > 1) { res.move.x /= len; res.move.y /= len; }
+        if (dist > maxDist) {
+            const angle = Math.atan2(dy, dx);
+            dx = Math.cos(angle) * maxDist;
+            dy = Math.sin(angle) * maxDist;
         }
+        this.joystick.x = dx / maxDist;
+        this.joystick.y = dy / maxDist;
+    }
 
-        if (!this.joysticks.right.active && this.mouse.down) {
-            res.isAttacking = true;
-            // Note: Aim calculation for mouse requires player position, handled in Game Loop usually
-            // We just flag it here.
-        }
+    getCommand() {
+        // Consumes the action so it only fires once per frame
+        const action = this.gestureAction;
+        this.gestureAction = null; 
 
-        return res;
+        return {
+            move: { x: this.joystick.x, y: this.joystick.y },
+            action: action
+        };
     }
 }
